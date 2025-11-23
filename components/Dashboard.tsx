@@ -7,6 +7,7 @@ import {
 import { initializeApp, getApps, getApp, deleteApp, FirebaseApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, Auth } from 'firebase/auth';
 import { getFirestore, collection, onSnapshot, doc, addDoc, deleteDoc, query, serverTimestamp, updateDoc, setDoc, setLogLevel, Firestore } from 'firebase/firestore';
+import { getAnalytics, isSupported } from 'firebase/analytics';
 
 import { usePDFLibrary } from '../hooks/usePDFLibrary';
 import Toast from './Toast';
@@ -76,6 +77,7 @@ const Dashboard: React.FC = () => {
   const [isOffline, setIsOffline] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [manualConfigJson, setManualConfigJson] = useState('');
+  
   // Initialize with local storage config if available, else hardcoded
   const [activeConfig, setActiveConfig] = useState(() => {
     const saved = localStorage.getItem('firebase_config_override');
@@ -130,6 +132,13 @@ const Dashboard: React.FC = () => {
           app = initializeApp(activeConfig);
         }
         
+        // Initialize Analytics if supported (safe check)
+        isSupported().then((supported) => {
+            if (supported) {
+                getAnalytics(app);
+            }
+        }).catch(err => console.debug("Analytics not supported in this env:", err));
+        
         const firestoreDb = getFirestore(app);
         const firebaseAuth = getAuth(app);
         setDb(firestoreDb);
@@ -156,7 +165,8 @@ const Dashboard: React.FC = () => {
                    showToast("Anonymous Auth disabled. Switching to Offline Mode.", "info");
                    setIsOffline(true);
                 } else {
-                  showToast("Authentication failed: " + (error.message || error.code), "error");
+                  showToast("Authentication failed. Switching to Offline Mode.", "error");
+                  setIsOffline(true);
                 }
             }
         };
@@ -175,8 +185,9 @@ const Dashboard: React.FC = () => {
         setupAuth();
       } catch (e: any) {
         console.error("Firebase init error", e);
-        setShowConfigModal(true);
-        showToast("Initialization Failed: " + e.message, "error");
+        // If critical init fails, fallback to offline to keep app usable
+        setIsOffline(true);
+        showToast("Init Failed. Offline Mode Active.", "error");
       }
     };
 
