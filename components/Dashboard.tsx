@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Plus, Trash2, Save, Download, Users, User, Edit2, Settings,
   Database, FileSpreadsheet, Link, DownloadCloud, AlertTriangle, WifiOff, RefreshCw
@@ -80,8 +80,12 @@ const Dashboard: React.FC = () => {
   
   // Initialize with local storage config if available, else hardcoded
   const [activeConfig, setActiveConfig] = useState(() => {
-    const saved = localStorage.getItem('firebase_config_override');
-    return saved ? JSON.parse(saved) : HARDCODED_CONFIG;
+    try {
+      const saved = localStorage.getItem('firebase_config_override');
+      return saved ? JSON.parse(saved) : HARDCODED_CONFIG;
+    } catch (e) {
+      return HARDCODED_CONFIG;
+    }
   });
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -107,6 +111,7 @@ const Dashboard: React.FC = () => {
       return;
     }
 
+    let isMounted = true;
     let unsubscribeAuth: (() => void) | undefined;
 
     const initFirebase = async () => {
@@ -134,58 +139,63 @@ const Dashboard: React.FC = () => {
         
         // Initialize Analytics if supported (safe check)
         isSupported().then((supported) => {
-            if (supported) {
+            if (supported && isMounted) {
                 getAnalytics(app);
             }
-        }).catch(err => console.debug("Analytics not supported in this env:", err));
+        }).catch(err => {
+            // Ignore analytics errors usually caused by ad blockers
+        });
         
         const firestoreDb = getFirestore(app);
         const firebaseAuth = getAuth(app);
-        setDb(firestoreDb);
+        
+        if (isMounted) {
+            setDb(firestoreDb);
+        }
 
-        const setupAuth = async () => {
-            try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(firebaseAuth, initialAuthToken);
-                } else {
-                    await signInAnonymously(firebaseAuth);
-                }
-            } catch (error: any) {
-                console.error("Auth Error:", error);
-                
-                if (error.code === 'auth/api-key-not-valid' || error.code === 'auth/invalid-api-key') {
-                  setShowConfigModal(true);
-                  showToast("Invalid API Key. Please update config.", "error");
-                } else if (error.code === 'auth/configuration-not-found' || error.message.includes('auth/configuration-not-found')) {
-                   // This error means Auth isn't enabled in the Firebase Console
-                   showToast("Auth not configured. Switching to Offline Mode.", "info");
-                   setIsOffline(true);
-                } else if (error.code === 'auth/operation-not-allowed') {
-                   // This means Anonymous Auth isn't enabled
-                   showToast("Anonymous Auth disabled. Switching to Offline Mode.", "info");
-                   setIsOffline(true);
-                } else {
-                  showToast("Authentication failed. Switching to Offline Mode.", "error");
-                  setIsOffline(true);
-                }
-            }
-        };
-
-        unsubscribeAuth = onAuthStateChanged(firebaseAuth, (user) => {
+        // Setup listener first to capture state changes
+        const unsub = onAuthStateChanged(firebaseAuth, (user) => {
+            if (!isMounted) return;
             if (user) {
                 setUserId(user.uid);
                 setIsFirebaseReady(true);
-                setShowConfigModal(false); // Close modal on success
+                setShowConfigModal(false); 
             } else {
                 setUserId(null);
                 setIsFirebaseReady(false); 
             }
         });
+        unsubscribeAuth = unsub;
 
-        setupAuth();
+        // Perform Sign In
+        try {
+            if (initialAuthToken) {
+                await signInWithCustomToken(firebaseAuth, initialAuthToken);
+            } else {
+                await signInAnonymously(firebaseAuth);
+            }
+        } catch (error: any) {
+            if (!isMounted) return;
+            console.error("Auth Error:", error);
+            
+            if (error.code === 'auth/api-key-not-valid' || error.code === 'auth/invalid-api-key') {
+              setShowConfigModal(true);
+              showToast("Invalid API Key. Please update config.", "error");
+            } else if (error.code === 'auth/configuration-not-found' || error.message.includes('auth/configuration-not-found')) {
+               showToast("Auth not configured. Switching to Offline Mode.", "info");
+               setIsOffline(true);
+            } else if (error.code === 'auth/operation-not-allowed') {
+               showToast("Anonymous Auth disabled. Switching to Offline Mode.", "info");
+               setIsOffline(true);
+            } else {
+              showToast("Authentication failed. Switching to Offline Mode.", "error");
+              setIsOffline(true);
+            }
+        }
+
       } catch (e: any) {
+        if (!isMounted) return;
         console.error("Firebase init error", e);
-        // If critical init fails, fallback to offline to keep app usable
         setIsOffline(true);
         showToast("Init Failed. Offline Mode Active.", "error");
       }
@@ -194,6 +204,7 @@ const Dashboard: React.FC = () => {
     initFirebase();
 
     return () => {
+      isMounted = false;
       if (unsubscribeAuth) unsubscribeAuth();
     };
   }, [activeConfig, isOffline]);
@@ -235,9 +246,6 @@ const Dashboard: React.FC = () => {
       setIsOffline(false);
       setShowConfigModal(false);
       showToast("Configuration updated. Connecting...", "info");
-      // Force reload to ensure clean Firebase instance if needed, 
-      // though react state update might be enough for simple cases.
-      // window.location.reload(); 
     } catch (e) {
       showToast("Invalid JSON Config", "error");
     }
