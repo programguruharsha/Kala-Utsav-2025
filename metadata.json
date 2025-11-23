@@ -1,0 +1,5 @@
+{
+  "name": "Cultural Fest Manager",
+  "description": "A comprehensive dashboard for managing cultural fest registrations, featuring Firebase synchronization, Google Sheets integration, and PDF report generation.",
+  "requestFramePermissions": []
+}
