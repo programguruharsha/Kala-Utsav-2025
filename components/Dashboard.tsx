@@ -22,7 +22,7 @@ const initialAuthToken = null;
 // Valid configuration provided by user
 const HARDCODED_CONFIG = {
   apiKey: "AIzaSyDlnwzSrf5WP2e6NALc2iKFgpmXEH4vrGI",
-  authDomain: "kala-utsav-2025.firebaseapp.com",
+  authDomain: "-utsav-2025.firebaseapp.com",
   projectId: "kala-utsav-2025",
   storageBucket: "kala-utsav-2025.firebasestorage.app",
   messagingSenderId: "932515904674",
@@ -519,9 +519,9 @@ const Dashboard: React.FC = () => {
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("KALA UTSAV 2025", pageWidth / 2, currentY, { align: "center" });
+    doc.text("BEL COMPOSITE PU COLLEGE", pageWidth / 2, currentY, { align: "center" });
     currentY += 8;
-    doc.text("REGISTRATION REPORT", pageWidth / 2, currentY, { align: "center" });
+    doc.text("Cultural Fest 2025", pageWidth / 2, currentY, { align: "center" });
     currentY += 5;
     
     doc.setLineWidth(0.5);
@@ -727,10 +727,10 @@ const Dashboard: React.FC = () => {
       </Modal>
 
       <header className="max-w-6xl mx-auto mb-8 text-center border-b-2 border-stone-200 pb-6">
-        <h1 className="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight">KALA UTSAV 2025</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight">BEL Composite PU College</h1>
         <div className="flex items-center justify-center gap-2 mt-2 text-purple-700">
           <Users className="w-5 h-5" />
-          <h2 className="text-xl font-semibold">CULTURAL FEST REGISTRATIONS</h2>
+          <h2 className="text-xl font-semibold">KALA UTSAV 2025</h2>
         </div>
         <div className="mt-4 flex justify-center gap-4">
            {/* Status Indicator */}
@@ -940,8 +940,8 @@ const Dashboard: React.FC = () => {
             <div className="md:pl-8" style={{ fontSize: `${baseFontSize}px` }}>
               
               <div className="text-center mb-8 border-b-2 border-stone-800 pb-4">
-                <h2 className="font-bold text-[1.4em] leading-tight">KALA UTSAV 2025</h2>
-                <div className="text-[1.1em] font-medium mt-2 text-stone-600">CULTURAL FEST REGISTRATIONS</div>
+                <h2 className="font-bold text-[1.4em] leading-tight">BEL Composite PU College</h2>
+                <div className="text-[1.1em] font-medium mt-2 text-stone-600">CULTURAL FEST 2025</div>
               </div>
 
               {registrations.length === 0 ? (
