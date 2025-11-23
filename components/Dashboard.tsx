@@ -16,7 +16,7 @@ import { Registration, RegistrationFormData, ToastState } from '../types';
 
 // --- Global Config & Helper Hooks ---
 
-const appId = 'cultural-fest-app';
+const appId = 'kala-utsav-2025';
 const initialAuthToken = null;
 
 // Valid configuration provided by user
@@ -103,13 +103,6 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     // If we are already in offline mode, don't try to connect
     if (isOffline) return;
-
-    // Check for placeholder/invalid keys immediately
-    if (!activeConfig?.apiKey || activeConfig.apiKey.includes("Your-Unique-Key-Here")) {
-      console.warn("Invalid API Key detected. Switching to setup mode.");
-      setShowConfigModal(true);
-      return;
-    }
 
     let isMounted = true;
     let unsubscribeAuth: (() => void) | undefined;
@@ -526,9 +519,9 @@ const Dashboard: React.FC = () => {
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("BEL COMPOSITE PU COLLEGE", pageWidth / 2, currentY, { align: "center" });
+    doc.text("KALA UTSAV 2025", pageWidth / 2, currentY, { align: "center" });
     currentY += 8;
-    doc.text("CULTURAL FEST 2025", pageWidth / 2, currentY, { align: "center" });
+    doc.text("REGISTRATION REPORT", pageWidth / 2, currentY, { align: "center" });
     currentY += 5;
     
     doc.setLineWidth(0.5);
@@ -575,7 +568,7 @@ const Dashboard: React.FC = () => {
       currentY = doc.lastAutoTable.finalY + 10;
     });
 
-    doc.save("Cultural_Fest_2025_Data.pdf");
+    doc.save("Kala_Utsav_2025_Data.pdf");
     showToast("PDF downloaded successfully!", "success");
   };
 
@@ -734,10 +727,10 @@ const Dashboard: React.FC = () => {
       </Modal>
 
       <header className="max-w-6xl mx-auto mb-8 text-center border-b-2 border-stone-200 pb-6">
-        <h1 className="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight">BEL COMPOSITE PU COLLEGE</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight">KALA UTSAV 2025</h1>
         <div className="flex items-center justify-center gap-2 mt-2 text-purple-700">
           <Users className="w-5 h-5" />
-          <h2 className="text-xl font-semibold">CULTURAL FEST 2025</h2>
+          <h2 className="text-xl font-semibold">CULTURAL FEST REGISTRATIONS</h2>
         </div>
         <div className="mt-4 flex justify-center gap-4">
            {/* Status Indicator */}
@@ -947,8 +940,8 @@ const Dashboard: React.FC = () => {
             <div className="md:pl-8" style={{ fontSize: `${baseFontSize}px` }}>
               
               <div className="text-center mb-8 border-b-2 border-stone-800 pb-4">
-                <h2 className="font-bold text-[1.4em] leading-tight">BEL COMPOSITE PU COLLEGE</h2>
-                <div className="text-[1.1em] font-medium mt-2 text-stone-600">CULTURAL FEST 2025</div>
+                <h2 className="font-bold text-[1.4em] leading-tight">KALA UTSAV 2025</h2>
+                <div className="text-[1.1em] font-medium mt-2 text-stone-600">CULTURAL FEST REGISTRATIONS</div>
               </div>
 
               {registrations.length === 0 ? (
